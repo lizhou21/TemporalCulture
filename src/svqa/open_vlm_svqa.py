@@ -8,6 +8,9 @@ import json
 from tqdm import tqdm 
 import base64
 import io
+from lmdeploy import pipeline, TurbomindEngineConfig
+from lmdeploy.vl import load_image
+
 from qwen_vl_utils import process_vision_info
 from transformers.image_utils import load_image
 # from modelscope import snapshot_download
@@ -32,6 +35,11 @@ class Evaluator(object):
         elif args.model_name == "Idefics3-8B-Llama3":
             processor = AutoProcessor.from_pretrained(model_file)
             model = AutoModelForVision2Seq.from_pretrained(model_file, torch_dtype=torch.bfloat16).to(args.device).eval()
+
+        
+        elif args.model_name == "InternVL2_5-8B":
+            model = pipeline(model_file, backend_config=TurbomindEngineConfig(session_len=8192))
+            processor = model
 
         return model, processor
     
@@ -62,7 +70,8 @@ class Evaluator(object):
                 return_tensors="pt",
             )
             inputs = inputs.to(args.device)
-            generated_ids = model.generate(**inputs)
+            generated_ids = model.generate(**inputs,max_new_tokens=200)
+
             generated_ids_trimmed = [
                 out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
             ]
@@ -89,7 +98,10 @@ class Evaluator(object):
             generated_ids = model.generate(**inputs, max_new_tokens=500)
             output_text = processor.batch_decode(generated_ids, skip_special_tokens=True)
 
-
+        elif args.model_name == "InternVL2_5-8B":
+            image = load_image(image_path)
+            response = model((final_promts, image))
+            output_text = response.text
         return output_text
 
             
@@ -117,11 +129,8 @@ def main(args):
     data_output = []
     erros_count = 0
     for data in tqdm(dataset):
-        # try:
+
         content = evaluator.eval_question(data, model, processor, args, instruction_prompt)
-        # except Exception as e:
-        #     erros_count = erros_count + 1
-        #     print(data['question_id'])
         data['predict'] = content
         data_output.append(data)
         with open(save_file, 'w', encoding='utf-8') as f:
@@ -133,12 +142,6 @@ def main(args):
     print(f'error:{erros_count}')
 
             
-
-    # print("Calculate accuracy...")
-    # accuracy = utils.get_accuracy(os.path.join(out_dir, out_file_name), 
-    #                               sivqa, parse_fn=utils.parse_idefics_sivqa)
-    # print(accuracy)
-    
     
 
 if __name__ == "__main__":
