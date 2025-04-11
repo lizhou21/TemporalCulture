@@ -24,7 +24,7 @@ args = parser.parse_args()
 
 save_file = args.root_dir + "/results/svqa/" + args.model + '.json'
 
-api_key = "sk-7ldxnC50jJ1tnT1r1aA4F171843a4880B4B5238bE29eC462"
+api_key = ""
 api_base = "https://api.ai-gaochao.cn/v1"
 client = OpenAI(api_key=api_key, base_url=api_base)
 
