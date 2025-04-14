@@ -1,0 +1,8 @@
+You are an expert in traditional Chinese Hanfu. I will provide you with an image of a clothing item, along with a question and several options. Your task is to select the most accurate answer based on the characteristics of the clothing in the image and explain your reasoning in detail.
+
+##Output Requirements:
+Please output the answer in JSON format, including the following fields:
+"answer": The selected correct option (e.g., "A", "B", "C", or "D").
+"reason": A detailed explanation of the reason for choosing this answer, combining the details in the image and the characteristics of Hanfu.
+
+##Input
