@@ -25,6 +25,63 @@ CANDIDATE_ANSWER = {
     'outerwear': ['比甲', '半臂', '云肩', '褙子', '披帛', '披风']
 }
 
+
+
+CANDIDATE_ANSWER_EN = {
+    'type': {
+        '汉元素服饰': "Han-element clothing", 
+        '传统汉服形制':"Traditional Hanfu style", 
+        '汉服改良版':"'Improved Han clothing"
+        }, 
+    'gender': {
+        '男':"Male", 
+        '女':"Female"
+        }, 
+    'period': {
+        '魏晋时期':"Wei and Jin Dynasties", 
+        '明朝':"Ming Dynasty", 
+        '宋朝':"Song Dynasty", 
+        '秦汉时期':"Qin and Han Dynasties", 
+        '唐朝':"Tang Dynasty"
+        }, 
+    'xiu': {
+        '窄袖':"Narrow sleeves", 
+        '直袖':"Straight sleeves", 
+        '半袖':"Half sleeves", 
+        '琵琶袖':"Pipa sleeves", 
+        '垂胡袖':"Chuihu sleeves", 
+        '大袖':"Large sleeves"
+        }, 
+    'jin': {
+        '大襟':"Da Jin", 
+        '对襟':"Dui Jin", 
+        '绕襟':"Rao Jin"
+        }, 
+    'ling': {
+        '直领':"Straight collar", 
+        '坦领':"Tan collar", 
+        '圆领':"Round collar", 
+        '方领':"Square collar", 
+        '立领':"Standing collar", 
+        '交领':"Cross collar"
+        }, 
+    'bottoms': {
+        '破群':"Po qun", 
+        '裤':"Pants", 
+        '马面裙':"Mamian Qun", 
+        '褶裙':"Zhe qun"
+        }, 
+    'outerwear': {
+        '比甲':"Bijia",
+        '半臂':"Banbi", 
+        '云肩':"Yunjian", 
+        '褙子':"Beizi", 
+        '披帛':"Pibo", 
+        '披风':"Pifeng"
+        }
+}
+
+
 TYPE_COUNT = {
     'type': 0,
     'gender': 0,
@@ -38,14 +95,14 @@ TYPE_COUNT = {
 
 # 为每个字段定义对应的问题文本
 QUESTION_TEXTS = {
-    'type': "图片中的服饰通常属于以下哪个类型？",
-    'gender': "图片中的服饰通常适合什么性别？",
-    'period': "图片中的服饰属于以下哪个时期的风格？",
-    'xiu': "图片中服饰的袖子属于以下哪种类型？",
-    'jin': "图片中服饰的襟型属于以下哪种类型？",
-    'ling': "图片中服饰的领型属于以下哪种类型？",
-    'bottoms': "图片中服饰的下身是什么类型的？",
-    'outerwear': "图片中服饰的外搭是什么？"
+    'type': ["图片中的服饰通常属于以下哪个类型？","Which type does the clothing in this image typically belong to, among the following options?"],
+    'gender': ["图片中的服饰通常适合什么性别？", "Which gender is the clothing in this image typically suitable for, among the following options?"],
+    'period': ["图片中的服饰属于以下哪个时期的风格？","Which historical period does the style of the clothing in this image belong to, among the following options?"],
+    'xiu': ["图片中服饰的袖子属于以下哪种类型？", "Which type does the sleeves of the clothing in this image belong to, among the following options?"],
+    'jin': ["图片中服饰的襟型属于以下哪种类型？", "Which type does the lapel style of the clothing in this image belong to, among the following options?"],
+    'ling': ["图片中服饰的领型属于以下哪种类型？", "Which type does the collar style of the clothing in this image belong to, among the following options?"],
+    'bottoms': ["图片中服饰的下身是什么类型的？", "Which type does the lower garment of the clothing in this image belong to, among the following options?"],
+    'outerwear': ["图片中服饰的外搭是什么？", "Which type does the outer layer of the clothing in this image belong to, among the following options?"]
 }
 
 
@@ -70,14 +127,20 @@ def get_candidate_choice(original_list, answer, num_to_select=3):
     random.shuffle(other_choice)
     return other_choice
 
-def get_choice(id2choices):
+def get_choice(id2choices,meta):
     choice = ""
     for i, (k, v) in enumerate(id2choices.items()):
         if i == 0:
             choice = choice+k+"."+v
         else:
-            choice = choice+"；"+k+"."+v
-    return choice
+            choice = choice+"; "+k+"."+v
+    choice_en = ""
+    for i, (k, v) in enumerate(id2choices.items()):
+        if i == 0:
+            choice_en = choice_en+k+"."+CANDIDATE_ANSWER_EN[meta][v]
+        else:
+            choice_en = choice_en+"; "+k+"."+CANDIDATE_ANSWER_EN[meta][v]
+    return {"zh":choice, "en":choice_en}
 
 def main(json_file):
     
@@ -108,7 +171,8 @@ def main(json_file):
                     "question_type": meta,
                     "cloth_id": d_id,
                     "img_list": d_info["img_list"],
-                    "base_question": QUESTION_TEXTS[meta]
+                    "base_question": QUESTION_TEXTS[meta][0],
+                    "base_question_en": QUESTION_TEXTS[meta][1],
                 }
                 if meta == 'gender':
                     if info != 'unsure':
@@ -122,8 +186,9 @@ def main(json_file):
                             "B": "女"
                         }
                         choice2id = {value: key for key, value in id2choices.items()}
-                        choice = get_choice(id2choices)
-                        q_d['choices']=choice
+                        choice = get_choice(id2choices,meta)
+                        q_d['choices']=choice['zh']
+                        q_d['choices_en']=choice['en']
                         q_d['answer']=choice2id[gender2map[info]]
                         if len(d_info["img_list"])>0:
                             all_questions.append(q_d)
@@ -151,8 +216,9 @@ def main(json_file):
                             print('a')
 
                         choice2id = {value: key for key, value in id2choices.items()}
-                        choice = get_choice(id2choices)
-                        q_d['choices']=choice
+                        choice = get_choice(id2choices,meta)
+                        q_d['choices']=choice['zh']
+                        q_d['choices_en']=choice['en']
                         q_d['answer']=choice2id[answer]
                         if len(d_info["img_list"])>0:
                             all_questions.append(q_d)
