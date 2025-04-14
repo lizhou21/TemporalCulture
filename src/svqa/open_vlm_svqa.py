@@ -32,7 +32,7 @@ class Evaluator(object):
 
             processor = AutoProcessor.from_pretrained(model_file)
             model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_file, torch_dtype="auto", device_map="auto").to(args.device).eval()
-        elif args.model_name == "Idefics3-8B-Llama3":
+        elif args.model_name == "Idefics3-8B-Llama3": # only English output
             processor = AutoProcessor.from_pretrained(model_file)
             model = AutoModelForVision2Seq.from_pretrained(model_file, torch_dtype=torch.bfloat16).to(args.device).eval()
 
@@ -43,13 +43,16 @@ class Evaluator(object):
 
         return model, processor
     
-    def eval_question(self, data, model, processor, args, instruction_prompt):
-        image_path = args.root_dir + '/dataset/raw_image/' + data['img_list'][0]
-        final_promts = instruction_prompt + "\n" + "问题："+data['base_question'] + "\n" + "选项："+data['choices']
-        # with open(image_path, "rb") as image_file:
-        #     image_data = image_file.read()
-        # image_stream = io.BytesIO(image_data)
-        # base64_image = base64.b64encode(image_stream.getvalue()).decode()
+    def eval_question(self, data, model, processor, args, instruction_prompt, template):
+        if args.face_info:
+            image_path = args.root_dir + '/dataset/raw_image/' + data['img_list'][0]
+        else:
+            image_path = args.root_dir + '/dataset/mask_image/' + data['img_list'][0]
+        if "en" in template:
+            final_promts = instruction_prompt + "\n" + "Question:"+data['base_question_en'] + "\n" + "Options: "+data['choices_en']
+        else:
+            final_promts = instruction_prompt + "\n" + "问题："+data['base_question'] + "\n" + "选项："+data['choices']
+
         if args.model_name == 'Qwen2.5-VL-7B-Instruct':
             messages = [
                 {
@@ -113,35 +116,41 @@ def main(args):
     evaluator = Evaluator(args)
     
     model, processor = evaluator._load_model()
-    save_file = args.root_dir + "/results/svqa/" + args.model_name + '.json'
-    
+    save_dir = args.root_dir + "/results/svqa/" + args.model_name
+    # 检查目录是否存在，如果不存在则创建
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
 
-    # read_data
 
-    with open(os.path.join(args.root_dir, 'dataset/merged_sivqa.json'), 'r', encoding='utf-8') as file:
-        dataset = json.load(file)
-
-    if args.thinking:
-        instruction_file = 'dataset/instruction/svqa_instruction.txt'
+    for template in args.instruction:
+        print(f"instruction: {template}")
+        save_file = f"{save_dir}/{args.model_name}_{template}.json"
+        instruction_file = f'dataset/instruction/svqa/{template}.txt'
         with open(os.path.join(args.root_dir, instruction_file), 'r') as files:
             instruction_prompt = files.readlines()
             instruction_prompt = "".join(instruction_prompt)
-    data_output = []
-    erros_count = 0
-    for data in tqdm(dataset):
 
-        content = evaluator.eval_question(data, model, processor, args, instruction_prompt)
-        data['predict'] = content
-        data_output.append(data)
+        # read_data
+        with open(os.path.join(args.root_dir, 'dataset/merged_sivqa.json'), 'r', encoding='utf-8') as file:
+            dataset = json.load(file)
+
+
+        data_output = []
+        erros_count = 0
+        for data in tqdm(dataset):
+
+            content = evaluator.eval_question(data, model, processor, args, instruction_prompt, template)
+            data['predict'] = content
+            data_output.append(data)
+            with open(save_file, 'w', encoding='utf-8') as f:
+                json.dump(data_output, f, ensure_ascii=False, indent=4)
+        
         with open(save_file, 'w', encoding='utf-8') as f:
             json.dump(data_output, f, ensure_ascii=False, indent=4)
-    
-    with open(save_file, 'w', encoding='utf-8') as f:
-        json.dump(data_output, f, ensure_ascii=False, indent=4)
 
-    print(f'error:{erros_count}')
+        print(f'error:{erros_count}')
 
-            
+                
     
 
 if __name__ == "__main__":
@@ -151,7 +160,9 @@ if __name__ == "__main__":
     argparser.add_argument("--model_name", default="Qwen2.5-VL-7B-Instruct")
     argparser.add_argument("--template", type=int, default=0)
     argparser.add_argument("--lang", default="zh")
-    argparser.add_argument("--thinking", action="store_true", default=False)
+    argparser.add_argument("--face_info", action="store_true")
+    argparser.add_argument('--instruction', nargs='+', type=str, help='List of instruction')
+    # argparser.add_argument("--thinking", action="store_true", default=False)
     
     args = argparser.parse_args()
     if torch.cuda.is_available():
