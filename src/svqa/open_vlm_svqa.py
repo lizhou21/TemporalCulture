@@ -14,7 +14,8 @@ from lmdeploy.vl import load_image
 from qwen_vl_utils import process_vision_info
 from transformers.image_utils import load_image
 # from modelscope import snapshot_download
-from transformers import AutoTokenizer, AutoProcessor, Qwen2_5_VLForConditionalGeneration, AutoModelForVision2Seq
+from transformers import AutoTokenizer, AutoProcessor, AutoModel, Qwen2_5_VLForConditionalGeneration, AutoModelForVision2Seq
+from transformers import MllamaForConditionalGeneration, AutoProcessor
 
 # import sivqa_utils
 # import utils
@@ -27,7 +28,11 @@ class Evaluator(object):
         self.model_name = args.model_name
     
     def _load_model(self):
-        model_file = os.path.join(self.args.model_dir, self.model_name)
+        if os.path.exists(self.args.model_dir):
+            model_file = os.path.join(self.args.model_dir, self.model_name)
+        else:
+            model_file = self.args.model_name
+                
         if args.model_name == "Qwen2.5-VL-7B-Instruct":
 
             processor = AutoProcessor.from_pretrained(model_file)
@@ -40,6 +45,23 @@ class Evaluator(object):
         elif args.model_name == "InternVL2_5-8B":
             model = pipeline(model_file, backend_config=TurbomindEngineConfig(session_len=8192))
             processor = model
+            
+        elif args.model_name == "MiniCPM-o-2_6":
+            model = AutoModel.from_pretrained('openbmb/MiniCPM-o-2_6', trust_remote_code=True, attn_implementation='sdpa', 
+                                              torch_dtype=torch.bfloat16, cache_dir=os.environ["HF_HOME"]) # sdpa or flash_attention_2, no eager
+            model = model.eval().cuda()
+            processor = AutoTokenizer.from_pretrained('openbmb/MiniCPM-o-2_6', trust_remote_code=True, cache_dir=os.environ["HF_HOME"])
+        
+        elif args.model_name == "Llama-3.2-11B-Vision":
+            model_id = "meta-llama/Llama-3.2-11B-Vision"
+
+            model = MllamaForConditionalGeneration.from_pretrained(
+                model_id,
+                torch_dtype=torch.bfloat16,
+                device_map="auto", cache_dir=os.environ["HF_HOME"],
+            )
+            processor = AutoProcessor.from_pretrained(model_id, cache_dir=os.environ["HF_HOME"])
+            
 
         return model, processor
     
@@ -105,6 +127,24 @@ class Evaluator(object):
             image = load_image(image_path)
             response = model((final_promts, image))
             output_text = response.text
+            
+        elif args.model_name == "MiniCPM-o-2_6":
+            image = Image.open(image_path).convert("RGB")
+            question = final_promts
+            msgs = [{'role': 'user', 'content': [image, question]}]
+
+            output_text = model.chat(
+                msgs=msgs,
+                tokenizer=processor
+            )
+        
+        elif args.model_name == "Llama-3.2-11B-Vision":
+            image = Image.open(image_path).convert("RGB")
+            prompt = "<|image|><|begin_of_text|>" + final_promts
+            inputs = processor(image, prompt, return_tensors="pt").to(model.device)
+            generated_ids = model.generate(**inputs, max_new_tokens=500)
+            output_text = processor.batch_decode(generated_ids, skip_special_tokens=True)
+
         return output_text
 
             
