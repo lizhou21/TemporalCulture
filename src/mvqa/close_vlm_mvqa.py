@@ -51,7 +51,9 @@ for template in args.instruction:
     with open(os.path.join(args.root_dir, instruction_file), 'r') as files:
         instruction_prompt = files.readlines()
         instruction_prompt = "".join(instruction_prompt)
-
+    if "en" in template:
+        with open(os.path.join(args.root_dir, 'dataset/mvqa_en.json'), 'r', encoding='utf-8') as file:
+            question_trans = json.load(file)
 
     with open(os.path.join(args.root_dir, 'dataset/merged_mvqa.json'), 'r', encoding='utf-8') as file:
         dataset = json.load(file)
@@ -71,15 +73,27 @@ for template in args.instruction:
         #     final_promts = instruction_prompt + "\n" + "问题："+data['question'] + "\n" 
 
         try:
-            options_text = ""
-            for i, path in enumerate(image_path):
-                letter = chr(65 + i)  # A, B, C, D...
-                options_text += f"{letter}. 图片{i+1}, "
+            if "en" in template:
+                options_text = ""
+                for i, path in enumerate(image_path):
+                    letter = chr(65 + i)  # A, B, C, D...
+                    options_text += f"{letter}. Figure {i+1}, "
 
-            options_text = options_text.rstrip(", ")
-            full_question = f"{data['question']}\n选项：{options_text}"
-            final_promts = instruction_prompt + "\n" + "问题：" + full_question
-            user_content = [{"type": "text", "text": final_promts}]
+                options_text = options_text.rstrip(", ")
+                full_question = f"{question_trans[data['question']]}\nOptions: {options_text}"
+                final_promts = instruction_prompt + "\n" + "Question:" + full_question
+                user_content = [{"type": "text", "text": final_promts}]
+                print('a')
+            else:
+                options_text = ""
+                for i, path in enumerate(image_path):
+                    letter = chr(65 + i)  # A, B, C, D...
+                    options_text += f"{letter}. 图片{i+1}, "
+
+                options_text = options_text.rstrip(", ")
+                full_question = f"{data['question']}\n选项：{options_text}"
+                final_promts = instruction_prompt + "\n" + "问题：" + full_question
+                user_content = [{"type": "text", "text": final_promts}]
 
             
             for img in image_path:

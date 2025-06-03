@@ -11,44 +11,49 @@ import re
 import os
 import io
 
-TYPE_COUNT = {
-    'type': 0,
-    'gender': 0,
-    'period': 0,
-    'xiu': 0,
-    'jin': 0,
-    'ling': 0,
-    'bottoms': 0,
-    'outerwear': 0,
-    'overall':0
-}
 
-RIGHT_COUNT = {
-    'type': 0,
-    'gender': 0,
-    'period': 0,
-    'xiu': 0,
-    'jin': 0,
-    'ling': 0,
-    'bottoms': 0,
-    'outerwear': 0,
-    'overall':0
-}
 
 
 
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument("--root_dir", default="/data1/home/lizhou/project/TemporalCultural", type=str)
-parser.add_argument("--model", default="doubao1-5-v", type=str, help=["doubao1-5-v","gpt-4o", "Qwen2.5-VL-7B-Instruct_v1", "Qwen2.5-VL-7B-Instruct","InternVL2_5-8B"])
+parser.add_argument("--root_dir", default="/online1/gzs_data/Personal_file/LiZhou/TemporalCultural", type=str)
+parser.add_argument("--model", default="Qwen2.5-VL-7B-Instruct", type=str, help=["doubao1-5-v","gpt-4o", "Qwen2.5-VL-7B-Instruct", "Qwen2.5-VL-7B-Instruct","InternVL2_5-8B"])
 args = parser.parse_args()
 
-# all_instructions = ["svqa_1", "svqa_2", "svqa_3","svqa_cot", "svqa_rationale", "svqa_en"]
-all_instructions = ["svqa_1", "svqa_2", "svqa_3", "svqa_4", "svqa_5", "svqa_cot", "svqa_cot1", "svqa_rationale", "svqa_en", "svqa_with_face", "svqa_face_rationale", "before"]
+# all_instructions = ["svqa_1", "svqa_2", "svqa_3", "svqa_4", "svqa_5", "svqa_cot", "svqa_cot1","svqa_rationale", "svqa_en"]
+all_instructions = ["svqa_1", "svqa_2", "svqa_3", "svqa_4", "svqa_5", "svqa_cot", "svqa_cot1","svqa_rationale", "svqa_en", "svqa_with_face", "svqa_face_rationale", "svqa_extra_info"]
+
+# all_instructions = ["svqa_1", "svqa_2", "svqa_3", "svqa_cot", "svqa_rationale", "svqa_en"]
+# all_instructions = ["svqa_1", "svqa_2", "svqa_3"]
+
 all_results = {}
 for template in all_instructions:
     ACC_COUNT = {
+        'type': 0,
+        'gender': 0,
+        'period': 0,
+        'xiu': 0,
+        'jin': 0,
+        'ling': 0,
+        'bottoms': 0,
+        'outerwear': 0,
+        'overall':0
+    }
+    TYPE_COUNT = {
+        'type': 0,
+        'gender': 0,
+        'period': 0,
+        'xiu': 0,
+        'jin': 0,
+        'ling': 0,
+        'bottoms': 0,
+        'outerwear': 0,
+        'overall':0
+    }
+
+    RIGHT_COUNT = {
         'type': 0,
         'gender': 0,
         'period': 0,
@@ -83,20 +88,35 @@ for template in all_instructions:
             elif args.model == "Qwen2.5-VL-7B-Instruct":
                 predict = data['predict'][0][7:-3]
                 answer_predict = json.loads(predict)['答案']
-            elif args.model == "gemini-25-p":
-                if data['predict'].startswith("<think>"):
-                    predict = data['predict'].split('```json')[-1][0:-3]
-                    answer_predict = json.loads(predict)['答案']
+            elif args.model == "Llama-3.2-11B-Vision":
+
+                # predict = re.split(r'\n+',data['predict'].strip())
+                if type(data['predict'])==list:
+                    predict = re.split(r'##',data['predict'][0].strip())
                 else:
-                    predict = data['predict'][7:-3]
-                    answer_predict = json.loads(predict)['答案']
-            elif args.model == "deepseek-r1":
-                if data['predict'].startswith("<think>"):
-                    predict = data['predict'].split('```json')[-1][0:-3]
-                    answer_predict = json.loads(predict)['答案']
+                    predict = re.split(r'##',data['predict'].strip())
+                answer_predict = predict[2].split("答案：")[-1].strip()
+                # answer_predict = predict[2].split("答案：")[1].strip()
+            elif args.model in ["MiniCPM-Llama3-V-2_5", "MiniCPM-V-2_6"]:
+                ans = []
+                if "A" in data['predict']:
+                    ans.append("A")
+                elif "B" in data['predict']:
+                    ans.append("B")
+                elif "C" in data['predict']:
+                    ans.append("C")
+                elif "D" in data['predict']:
+                    ans.append("D")
+                
+                if len(ans) == 1:
+                    answer_predict = ans[0]
+                elif len(ans) == 0:
+                    answer_predict == "0"
                 else:
-                    predict = data['predict'][7:-3]
-                    answer_predict = json.loads(predict)['答案']
+                    print('a')
+                # predict = data['predict'][0][7:-3]
+                # answer_predict = json.loads(predict)['答案']
+
         
         else:
             if args.model == 'gpt-4o':
@@ -116,9 +136,25 @@ for template in all_instructions:
             elif args.model == "Qwen2.5-VL-7B-Instruct":
                 predict = data['predict'][0][7:-3]
                 answer_predict = json.loads(predict)['answer']
-            elif args.model == "gemini-25-p":
-                predict = data['predict'][7:-3]
-                answer_predict = json.loads(predict)['answer']
+            elif args.model in ["MiniCPM-Llama3-V-2_5", "MiniCPM-V-2_6"]:
+                ans = []
+                predict = data['predict'].split("\n")[-1]
+                if "A" in predict:
+                    ans.append("A")
+                elif "B" in predict:
+                    ans.append("B")
+                elif "C" in predict:
+                    ans.append("C")
+                elif "D" in predict:
+                    ans.append("D")
+                
+                if len(ans) == 1:
+                    answer_predict = ans[0]
+                elif len(ans) == 0:
+                    answer_predict = "0"
+                else:
+                    print('a')
+            
 
         question_type = data['question_type']
         # if question_type == 'type':

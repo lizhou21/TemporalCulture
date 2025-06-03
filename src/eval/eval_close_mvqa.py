@@ -11,6 +11,13 @@ import re
 import os
 import io
 
+
+ANSWER = {
+    0: "A",
+    1: 'B',
+    2: "C",
+    3: "D"
+}
 TYPE_COUNT = {
     'type': 0,
     'gender': 0,
@@ -41,11 +48,11 @@ parser = argparse.ArgumentParser()
 
 
 parser.add_argument("--root_dir", default="/data1/home/lizhou/project/TemporalCultural", type=str)
-parser.add_argument("--model", default="doubao1-5-v", type=str, help=["doubao1-5-v","gpt-4o", "Qwen2.5-VL-7B-Instruct_v1", "Qwen2.5-VL-7B-Instruct","InternVL2_5-8B"])
+parser.add_argument("--model", default="gpt-4o", type=str, help=["doubao1-5-v","gpt-4o", "Qwen2.5-VL-7B-Instruct_v1", "Qwen2.5-VL-7B-Instruct","InternVL2_5-8B"])
 args = parser.parse_args()
 
 # all_instructions = ["svqa_1", "svqa_2", "svqa_3","svqa_cot", "svqa_rationale", "svqa_en"]
-all_instructions = ["svqa_1", "svqa_2", "svqa_3", "svqa_4", "svqa_5", "svqa_cot", "svqa_cot1", "svqa_rationale", "svqa_en", "svqa_with_face", "svqa_face_rationale", "before"]
+all_instructions = ["mvqa_1", "mvqa_2", "mvqa_3", "mvqa_4", "mvqa_5", "mvqa_cot", "mvqa_rationale", "mvqa_with_face", "mvqa_face_rationale"]
 all_results = {}
 for template in all_instructions:
     ACC_COUNT = {
@@ -60,7 +67,7 @@ for template in all_instructions:
         'overall':0
     }
 
-    read_file = f"{args.root_dir}/results/svqa/{args.model}/{args.model}_{template}.json"
+    read_file = f"{args.root_dir}/results/mvqa/{args.model}/{args.model}_{template}.json"
 
     with open(read_file, 'r', encoding='utf-8') as file:
         dataset_eval = json.load(file)
@@ -71,8 +78,11 @@ for template in all_instructions:
                 answer_predict = json.loads(predict)['答案']
 
             elif args.model == 'doubao1-5-v':
-                predict = data['predict']
-                answer_predict = json.loads(predict)['答案']
+                if data['predict'][0] == "{":
+                    predict = data['predict']
+                    answer_predict = json.loads(predict)['答案']
+                else:
+                    continue
             elif args.model == 'Qwen2.5-VL-7B-Instruct_v1':
                 predict = data['predict'][0]+"\"\n}\n"
                 predict = predict[7:]
@@ -125,7 +135,9 @@ for template in all_instructions:
         #     print('a')
         TYPE_COUNT[question_type] += 1
         TYPE_COUNT['overall'] += 1
-        if answer_predict[0] == data['answer']:
+        
+        
+        if answer_predict[0] == ANSWER[data['answer_idx']]:
             RIGHT_COUNT[question_type] += 1
             RIGHT_COUNT['overall'] += 1
 
@@ -137,6 +149,6 @@ for template in all_instructions:
 final_data = pd.DataFrame(all_results).T
 
 
-final_data.to_excel(f"{args.root_dir}/results/svqa/{args.model}/{args.model}.xlsx")
+final_data.to_excel(f"{args.root_dir}/results/mvqa/{args.model}/{args.model}.xlsx")
 
 print('a')
