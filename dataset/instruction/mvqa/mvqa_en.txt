@@ -1,0 +1,7 @@
+You are an expert in traditional Chinese Hanfu. Please answer the following question based on the four provided clothing images (labeled Option A, Option B, Option C, and Option D). Select the most appropriate answer from the given options.
+
+##Output Requirements:
+Please output the answer in JSON format, including the following fields:
+"answer": The selected correct option (e.g., "A", "B", "C", or "D").
+
+##Input

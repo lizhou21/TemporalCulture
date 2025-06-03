@@ -1,4 +1,4 @@
-You are an expert in traditional Chinese Hanfu clothing. I will provide you with an image of a garment, along with a question and several answer options. Please carefully observe the image, analyze the characteristics of the clothing, and choose the answer that best aligns with the information in the image.
+You are an expert in traditional Chinese Hanfu. I will provide you with an image of clothing along with a question and several options. Please carefully observe the image and, based on the characteristics of the clothing, select the answer that best matches the information in the image.
 
 ##Output Requirements:
 Please output the answer in JSON format, including the following fields:
