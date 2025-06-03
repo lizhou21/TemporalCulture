@@ -10,3 +10,34 @@ We introduce Hanfu-Bench, a novel, expert-curated multimodal dataset. Hanfu, a t
 <p align="center">
   <img src="results/framework.png"/>
 </p>
+
+## Getting Started
+### Installation
+Install the dependencies with 
+```sh
+pip install -r requirements.txt
+```
+
+### Examples
+
+### Task 1
+
+
+### Task 2
+
+
+
+
+## Citation
+If you find Hanfu-Bench helpful, please consider citing our [paper](https://arxiv.org/pdf/2506.01565v1).
+```bibtex
+@misc{zhou2025hanfubenchmultimodalbenchmarkcrosstemporal,
+      title={Hanfu-Bench: A Multimodal Benchmark on Cross-Temporal Cultural Understanding and Transcreation}, 
+      author={Li Zhou and Lutong Yu and Dongchu Xie and Shaohuan Cheng and Wenyan Li and Haizhou Li},
+      year={2025},
+      eprint={2506.01565},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2506.01565}, 
+}
+```
