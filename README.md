@@ -19,6 +19,133 @@ pip install -r requirements.txt
 ```
 
 ### Examples
+meta-info.json
+```
+Dataset({
+  "1000": {
+    "source": "TaoBao",
+    "img_list": [
+      "num1000_img1.jpg"
+    ],
+    "gender": "female",
+    "type": "传统汉服形制",
+    "period": "唐朝",
+    "xiu": "unsure",
+    "jin": "对襟",
+    "ling": "直领",
+    "bottoms": "unsure",
+    "outerwear": "披帛"
+  },
+})
+```
+
+merged-sivqa.json
+```
+Dataset([
+  {
+    "question_id": "single_0",
+    "question_type": "gender",
+    "cloth_id": "1000",
+    "img_list": [
+      "num1000_img1.jpg"
+    ],
+    "base_question": "图片中的服饰通常适合什么性别？",
+    "base_question_en": "Which gender is the clothing in this image typically suitable for, among the following options?",
+    "choices": "A.男; B.女",
+    "choices_en": "A.Male; B.Female",
+    "answer": "B"
+  },
+])
+```
+
+merged-mivqa.json
+```
+Dataset([
+  {
+    "question_meta": {
+      "answer": {
+        "image": "num1080_img4.jpg",
+        "meta": {
+          "gender": "female",
+          "type": "汉元素服饰",
+          "style": "unsure",
+          "period": "unsure",
+          "xiu": "unsure",
+          "jin": "对襟",
+          "ling": "圆领",
+          "bottoms": "unsure",
+          "outerwear": ""
+        }
+      },
+      "candidates": [
+        {
+          "image": "num166_img10.jpg",
+          "meta": {
+            "gender": "female",
+            "type": "汉服改良版",
+            "style": "TwoPiece",
+            "period": "unsure",
+            "xiu": "unsure",
+            "jin": "对襟",
+            "ling": "unsure",
+            "bottoms": "马面裙",
+            "outerwear": ""
+          }
+        },
+        {
+          "image": "num1169_img5.jpg",
+          "meta": {
+            "gender": "male",
+            "type": "传统汉服形制",
+            "style": "unsure",
+            "period": "unsure",
+            "xiu": "unsure",
+            "jin": "大襟",
+            "ling": "unsure",
+            "bottoms": "裤",
+            "outerwear": ""
+          }
+        },
+        {
+          "image": "num1310_img1.jpg",
+          "meta": {
+            "gender": "male",
+            "type": "传统汉服形制",
+            "style": "TwoPiece",
+            "period": "unsure",
+            "xiu": "unsure",
+            "jin": "unsure",
+            "ling": "unsure",
+            "bottoms": "unsure",
+            "outerwear": "甲胄"
+          }
+        }
+      ],
+      "answer_img": "num1080_img4.jpg",
+      "candidate_imgs": [
+        "num166_img10.jpg",
+        "num1169_img5.jpg",
+        "num1310_img1.jpg"
+      ],
+      "question": "以下图片中的服饰属于汉元素服饰的是？",
+      "question_type": "type",
+      "question_formular": "type_t1"
+    },
+    "question": "以下图片中的服饰属于汉元素服饰的是？",
+    "options": [
+      "num1080_img4.jpg",
+      "num166_img10.jpg",
+      "num1169_img5.jpg",
+      "num1310_img1.jpg"
+    ],
+    "answer_idx": 0,
+    "qid": "mivqa_0",
+    "question_id": "multi_0",
+    "question_type": "type"
+  },
+])
+```
+
 
 ### Task 1
 
