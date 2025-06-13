@@ -119,7 +119,6 @@ def main(args):
     
     model, processor = evaluator._load_model()
     save_dir = args.root_dir + "/results/svqa/" + args.model_name
-    # 检查目录是否存在，如果不存在则创建
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -161,8 +160,8 @@ def main(args):
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
-    argparser.add_argument("--root_dir", default="/online1/gzs_data/Personal_file/LiZhou/TemporalCultural")
-    argparser.add_argument("--model_dir", default="/online1/gzs_data/LLM-models")
+    argparser.add_argument("--root_dir", default="TemporalCultural")
+    argparser.add_argument("--model_dir", default="LLM-models")
     argparser.add_argument("--model_name", default="Qwen2.5-VL-7B-Instruct")
     argparser.add_argument("--template", type=int, default=0)
     argparser.add_argument("--lang", default="zh")
