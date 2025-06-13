@@ -13,7 +13,6 @@ We introduce Hanfu-Bench, a novel, expert-curated multimodal dataset. Hanfu, a t
 
 ## Getting Started
 ### Installation
-Install the dependencies with 
 ```sh
 pip install -r requirements.txt
 ```
