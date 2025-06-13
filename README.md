@@ -147,10 +147,20 @@ Dataset([
 ```
 
 
-### Task 1
+### Task 1:  Cultural visual understanding
+single-image VQA:
+```
+python3 src/svqa/open_vlm_svqa.py --model_name Qwen2.5-VL-7B-Instruct --instruction svqa_1
+```
+
+multi-image VQA:
+```
+python src/mvqa/open_vlm_mvqa.py --model_name MiniCPM-V-2_6 --instruction mvqa_1 mvqa_2 mvqa_3 mvqa_4 mvqa_5
+```
 
 
-### Task 2
+### Task 2: Cultural Image Transcreation
+waiting……
 
 
 
