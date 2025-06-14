@@ -159,9 +159,34 @@ python src/mvqa/open_vlm_mvqa.py --model_name MiniCPM-V-2_6 --instruction mvqa_1
 
 
 ### Task 2: Cultural Image Transcreation
-waiting……
+Step 1: Generate and Modernize Descriptions
+Generate detailed descriptions for Hanfu images and transform them into modern fashion concepts:
+```
+python step1_generate_captions_gpt4o.py --config config.yaml --data_dir ./input_images --output ./captions.json
+```
+Parameters:
 
+--config: Path to configuration file
+--data_dir: Directory containing Hanfu images
+--output: Output JSON file for descriptions
 
+Step 2: Generate Modern Fashion Images
+Choose one of the following models:
+Option A: Standard Stable Diffusion with Long-CLIP
+```
+python stable_diffusion_img2img.py --config config.yaml --captions ./captions.json --output ./output_sd
+```
+Option B: Stable Diffusion XL (Recommended for Quality)
+```
+python sdxl_img2img.py --config config.yaml --captions ./captions.json --output ./output_sdxl
+```
+Option C: InstructPix2Pix (For Image Editing)
+```
+python instruct_pix2pix_img2img.py --config config.yaml --captions ./captions.json --output ./output_instruct
+```
+Common Parameters:
+--captions: JSON file with image descriptions
+--output: Output directory for generated images
 
 
 ## Citation
