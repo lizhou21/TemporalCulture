@@ -173,15 +173,15 @@ Parameters:
 Step 2: Generate Modern Fashion Images
 Choose one of the following models:
 
-Option A: Standard Stable Diffusion with Long-CLIP
+Option A: Stable Diffusion base
 ```
 python stable_diffusion_img2img.py --config config.yaml --captions ./captions.json --output ./output_sd
 ```
-Option B: Stable Diffusion XL (Recommended for Quality)
+Option B: Stable Diffusion XL 
 ```
 python sdxl_img2img.py --config config.yaml --captions ./captions.json --output ./output_sdxl
 ```
-Option C: InstructPix2Pix (For Image Editing)
+Option C: InstructPix2Pix 
 ```
 python instruct_pix2pix_img2img.py --config config.yaml --captions ./captions.json --output ./output_instruct
 ```
