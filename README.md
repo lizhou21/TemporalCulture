@@ -165,10 +165,10 @@ Generate detailed descriptions for Hanfu images and transform them into modern f
 python step1_generate_captions_gpt4o.py --config config.yaml --data_dir ./input_images --output ./captions.json
 ```
 Parameters:
-
 --config: Path to configuration file
 --data_dir: Directory containing Hanfu images
 --output: Output JSON file for descriptions
+
 
 Step 2: Generate Modern Fashion Images
 Choose one of the following models:
